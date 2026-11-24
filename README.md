@@ -1,3 +1,7 @@
+# 仁和医院 · 门诊挂号系统
+
+基于 Vite + React 19 + TypeScript 开发的门诊自助挂号系统。
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
