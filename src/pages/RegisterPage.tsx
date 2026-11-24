@@ -29,8 +29,8 @@ export function RegisterPage({ onViewRecords, onToast, onPrint, onCancel }: Prop
   const dept = DEPTS.find((d) => d.id === state.dept) ?? null;
   const doctor = DOCTORS.find((d) => d.id === state.doctor) ?? null;
   const doctors = useMemo(
-    () => (state.dept ? DOCTORS.filter((d) => d.dept === state.dept) : []),
-    [state.dept]
+    () => (state.dept ? DOCTORS.filter((d) => d.dept === state.doctor) : []),
+    [state.dept, state.doctor]
   );
 
   const days = useMemo(() => (doctor ? daysFor(doctor) : []), [doctor]);
