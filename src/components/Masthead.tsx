@@ -1,8 +1,10 @@
 import { WD } from '../lib/date';
 
+export type ViewName = 'register' | 'records' | 'visit';
+
 interface Props {
-  view: 'register' | 'records';
-  onChange: (v: 'register' | 'records') => void;
+  view: ViewName;
+  onChange: (v: ViewName) => void;
 }
 
 /** 顶部院牌 + 标签导航 */
@@ -40,6 +42,14 @@ export function Masthead({ view, onChange }: Props) {
             onClick={() => onChange('records')}
           >
             我的挂号
+          </button>
+          <button
+            className={'tab' + (view === 'visit' ? ' is-active' : '')}
+            role="tab"
+            aria-selected={view === 'visit'}
+            onClick={() => onChange('visit')}
+          >
+            就诊记录
           </button>
         </div>
       </div>

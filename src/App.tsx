@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Appointment } from './types';
-import { Masthead } from './components/Masthead';
+import { Masthead, type ViewName } from './components/Masthead';
 import { CancelDialog } from './components/CancelDialog';
 import { SlipCard } from './components/SlipCard';
 import { RegisterPage } from './pages/RegisterPage';
 import { RecordsPage } from './pages/RecordsPage';
+import { VisitRecordsPage } from './pages/VisitRecordsPage';
 import { useAppointments } from './hooks/useAppointments';
 import { AppointmentsContext } from './hooks/appointmentsContext';
 import { dateCn } from './lib/date';
 
-type View = 'register' | 'records';
+type View = ViewName;
 
 export default function App() {
   const api = useAppointments();
@@ -63,6 +64,9 @@ export default function App() {
         </section>
         <section className="view" hidden={view !== 'records'}>
           <RecordsPage onPrint={print} onCancel={openCancel} />
+        </section>
+        <section className="view" hidden={view !== 'visit'}>
+          <VisitRecordsPage onPrint={print} />
         </section>
       </main>
 
