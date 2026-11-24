@@ -1,122 +1,87 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { Appointment } from './types';
+import { Masthead } from './components/Masthead';
+import { CancelDialog } from './components/CancelDialog';
+import { SlipCard } from './components/SlipCard';
+import { RegisterPage } from './pages/RegisterPage';
+import { RecordsPage } from './pages/RecordsPage';
+import { useAppointments } from './hooks/useAppointments';
+import { AppointmentsContext } from './hooks/appointmentsContext';
+import { dateCn } from './lib/date';
 
-function App() {
-  const [count, setCount] = useState(0)
+type View = 'register' | 'records';
+
+export default function App() {
+  const api = useAppointments();
+  const { cancel } = api;
+  const [view, setView] = useState<View>('register');
+  const [toastMsg, setToastMsg] = useState('');
+  const [toastShow, setToastShow] = useState(false);
+  const [pending, setPending] = useState<Appointment | null>(null);
+  const [printing, setPrinting] = useState<Appointment | null>(null);
+  const toastTimer = useRef<number | undefined>(undefined);
+
+  const toast = useCallback((msg: string) => {
+    setToastMsg(msg);
+    setToastShow(true);
+    window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToastShow(false), 2600);
+  }, []);
+
+  useEffect(() => () => window.clearTimeout(toastTimer.current), []);
+
+  const openCancel = useCallback((a: Appointment) => setPending(a), []);
+
+  const doCancel = useCallback(() => {
+    if (!pending) return;
+    cancel(pending.id);
+    setPending(null);
+    toast('已退号，号源已释放');
+  }, [pending, cancel, toast]);
+
+  const print = useCallback((a: Appointment) => {
+    setPrinting(a);
+    // 等渲染完成后再唤起打印
+    window.setTimeout(() => {
+      window.print();
+      window.setTimeout(() => setPrinting(null), 300);
+    }, 100);
+  }, []);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <AppointmentsContext.Provider value={api}>
+      <Masthead view={view} onChange={setView} />
 
-      <div className="ticks"></div>
+      <main className="wrap">
+        <section className="view" hidden={view !== 'register'}>
+          <RegisterPage
+            onViewRecords={() => setView('records')}
+            onToast={toast}
+            onPrint={print}
+            onCancel={openCancel}
+          />
+        </section>
+        <section className="view" hidden={view !== 'records'}>
+          <RecordsPage onPrint={print} onCancel={openCancel} />
+        </section>
+      </main>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <div id="toast" className={toastShow ? 'show' : ''} role="status" aria-live="polite">
+        {toastMsg}
+      </div>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <CancelDialog
+        open={!!pending}
+        text={
+          pending
+            ? `将退掉 ${dateCn(pending.date)} ${pending.slot} · ${pending.deptName} ${pending.doctorName} 的号（就诊序号 ${pending.seq} 号）。退号后号源会释放给其他患者。`
+            : ''
+        }
+        onConfirm={doCancel}
+        onCancel={() => setPending(null)}
+      />
+
+      <div id="printOnly">{printing && <SlipCard appt={printing} draft={null} />}</div>
+    </AppointmentsContext.Provider>
+  );
 }
-
-export default App

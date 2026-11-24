@@ -1,0 +1,1179 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>仁和医院 · 门诊挂号</title>
+<style>
+  :root{
+    --paper:#f3f7f6;
+    --ink:#102c33;
+    --ink-2:#3d5a61;
+    --muted:#6f878c;
+    --line:#d7e2e0;
+    --sign:#0e6f7d;
+    --sign-deep:#0a4d58;
+    --sign-soft:#e4efee;
+    --seal:#b23b2c;
+    --ok:#2c7a5b;
+    --serif:"Songti SC","STSong","Noto Serif SC","Source Han Serif SC",SimSun,serif;
+    --sans:"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei","Noto Sans SC","Helvetica Neue",Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono",Consolas,"Courier New",monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--sans);font-size:15px;line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font:inherit;color:inherit}
+  h1,h2,h3,p,dl,dd{margin:0}
+  a{color:var(--sign)}
+  :focus-visible{outline:2px solid var(--sign);outline-offset:2px}
+
+  /* ---------- 院牌 ---------- */
+  .masthead{background:var(--sign-deep);color:#eaf5f4;border-bottom:3px solid #0b5d6a}
+  .mast-inner{max-width:1180px;margin:0 auto;padding:0 24px}
+  .mast-top{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding:22px 0 18px;flex-wrap:wrap}
+  .brand-mark{font-family:var(--serif);font-size:27px;letter-spacing:.16em;font-weight:600}
+  .brand-sub{margin-top:2px;font-size:12.5px;letter-spacing:.38em;color:#a9cbcd;text-indent:.38em}
+  .mast-meta{text-align:right;font-size:12.5px;color:#a9cbcd;line-height:1.7}
+  .mast-meta strong{display:block;font-weight:500;color:#e2f0ef;font-size:13px;letter-spacing:.04em}
+  .tabs{display:flex;gap:26px;border-top:1px solid rgba(226,240,239,.18)}
+  .tab{
+    appearance:none;background:none;border:0;padding:12px 2px 11px;cursor:pointer;
+    color:#a9cbcd;font-size:14px;letter-spacing:.12em;border-bottom:2px solid transparent;margin-bottom:-3px;
+  }
+  .tab:hover{color:#eaf5f4}
+  .tab.is-active{color:#fff;border-bottom-color:#eaf5f4}
+  .tab:focus-visible{outline-offset:-4px;outline-color:#eaf5f4}
+
+  /* ---------- 布局 ---------- */
+  .wrap{max-width:1180px;margin:0 auto;padding:30px 24px 72px}
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:38px;align-items:start}
+  .flow{min-width:0}
+  .side{position:sticky;top:22px}
+
+  /* ---------- 步骤 ---------- */
+  .step{display:grid;grid-template-columns:38px minmax(0,1fr);gap:14px;padding:24px 0;border-top:1px solid var(--line)}
+  .step:first-of-type{border-top:0;padding-top:4px}
+  .step-num{font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.1em;padding-top:7px}
+  .step-title{font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:.05em;line-height:1.4}
+  .step-hint{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .step-body{transition:opacity .2s ease}
+  .step.is-locked .step-body{opacity:.45}
+  .step.is-locked .step-num{opacity:.5}
+  .step.is-locked .step-title{color:var(--ink-2)}
+
+  .dept-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:14px}
+  .dept{
+    appearance:none;background:#fff;border:1px solid var(--line);border-left:3px solid #c9dad8;
+    border-radius:2px;padding:11px 12px;text-align:left;cursor:pointer;
+    display:flex;flex-direction:column;gap:1px;
+    transition:border-color .15s ease,background .15s ease;
+  }
+  .dept:hover{border-color:#a9c5c2;border-left-color:var(--sign)}
+  .dept .name{font-family:var(--serif);font-size:18px;letter-spacing:.05em;line-height:1.35}
+  .dept .sub{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dept[aria-pressed="true"]{background:var(--sign);border-color:var(--sign);color:#fff}
+  .dept[aria-pressed="true"] .sub{color:#c6e2e1}
+
+  .doc-list{margin-top:14px}
+  .doc{
+    appearance:none;width:100%;background:#fff;border:1px solid var(--line);border-radius:2px;
+    padding:11px 14px;display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:13px;
+    align-items:center;text-align:left;cursor:pointer;transition:border-color .15s ease,box-shadow .15s ease;
+  }
+  .doc+.doc{margin-top:8px}
+  .doc:hover{border-color:#a9c5c2}
+  .doc .ava{
+    width:40px;height:40px;border-radius:50%;background:var(--sign-soft);color:var(--sign-deep);
+    display:grid;place-items:center;font-family:var(--serif);font-size:17px;letter-spacing:.02em;
+  }
+  .doc .nm{font-size:15px;font-weight:600;letter-spacing:.03em}
+  .doc .nm .tt{font-weight:400;font-size:12px;color:var(--ink-2);margin-left:8px;letter-spacing:.02em}
+  .doc .spec{font-size:12px;color:var(--muted);margin-top:2px}
+  .doc .fee{font-family:var(--mono);font-size:14px;color:var(--ink-2);text-align:right;white-space:nowrap}
+  .doc .fee small{display:block;font-family:var(--sans);font-size:11px;color:var(--muted)}
+  .doc[aria-pressed="true"]{border-color:var(--sign);box-shadow:inset 0 0 0 1px var(--sign)}
+  .doc[aria-pressed="true"] .ava{background:var(--sign);color:#fff}
+
+  .dates{display:flex;gap:8px;overflow-x:auto;padding:14px 0 4px;scrollbar-width:thin}
+  .date{
+    appearance:none;flex:0 0 auto;min-width:76px;background:#fff;border:1px solid var(--line);
+    border-radius:2px;padding:8px 10px 7px;text-align:center;cursor:pointer;line-height:1.35;
+    transition:border-color .15s ease,background .15s ease;
+  }
+  .date:hover{border-color:#a9c5c2}
+  .date .d1{font-size:13.5px;letter-spacing:.04em}
+  .date .d2{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:1px}
+  .date[aria-pressed="true"]{background:var(--sign);border-color:var(--sign);color:#fff}
+  .date[aria-pressed="true"] .d2{color:#c6e2e1}
+
+  .period{margin-top:14px;font-size:12px;color:var(--muted);letter-spacing:.14em}
+  .period:first-of-type{margin-top:16px}
+  .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:8px;margin-top:8px}
+  .slot{
+    appearance:none;background:#fff;border:1px solid var(--line);border-radius:2px;
+    padding:8px 6px 7px;text-align:center;cursor:pointer;line-height:1.3;
+    transition:border-color .15s ease,background .15s ease;
+  }
+  .slot .t{font-family:var(--mono);font-size:14px;letter-spacing:.02em}
+  .slot .r{font-size:11px;color:var(--muted);margin-top:2px}
+  .slot:hover:not([disabled]){border-color:#a9c5c2}
+  .slot[aria-pressed="true"]{background:var(--sign);border-color:var(--sign);color:#fff}
+  .slot[aria-pressed="true"] .r{color:#c6e2e1}
+  .slot[disabled]{cursor:not-allowed;background:#eef3f2;color:#9db0b3;border-color:#e3eae9}
+  .slot[disabled] .r{color:#a8b9bb}
+
+  .await{
+    margin-top:12px;border:1px dashed #c6d6d4;background:rgba(255,255,255,.45);
+    padding:20px 16px;font-size:13px;color:var(--muted);text-align:center;
+  }
+  .reveal{animation:reveal .24s ease both}
+  @keyframes reveal{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+  .field.full{grid-column:1/-1}
+  .field label{display:block;font-size:12px;color:var(--ink-2);margin-bottom:5px;letter-spacing:.06em}
+  .field input{
+    width:100%;padding:9px 11px;border:1px solid #cbd9d7;border-radius:2px;background:#fff;
+    font:inherit;font-size:14px;color:var(--ink);letter-spacing:.02em;
+  }
+  .field input::placeholder{color:#9fb1b3}
+  .field input:focus{outline:none;border-color:var(--sign);box-shadow:0 0 0 3px rgba(14,111,125,.13)}
+  .field .hint{font-size:11.5px;color:var(--muted);margin-top:4px;min-height:17px}
+  .field .hint.err{color:var(--seal)}
+
+  .submit-bar{
+    grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:16px;
+    border-top:1px solid var(--line);padding-top:14px;margin-top:2px;flex-wrap:wrap;
+  }
+  .total{font-size:13px;color:var(--ink-2)}
+  .total b{font-family:var(--mono);font-size:20px;color:var(--ink);font-weight:600;margin-left:4px}
+  .btn{
+    appearance:none;border-radius:2px;border:1px solid transparent;padding:10px 22px;cursor:pointer;
+    font-size:14px;letter-spacing:.1em;transition:background .15s ease,border-color .15s ease,color .15s ease;
+  }
+  .btn-primary{background:var(--sign);color:#fff}
+  .btn-primary:hover{background:var(--sign-deep)}
+  .btn-primary[disabled]{background:#b6c8c9;cursor:not-allowed}
+  .btn-ghost{background:transparent;border-color:#c3d3d1;color:var(--ink-2)}
+  .btn-ghost:hover{border-color:var(--sign);color:var(--sign)}
+  .btn-sm{padding:6px 13px;font-size:12.5px;letter-spacing:.04em}
+  .fineprint{grid-column:1/-1;font-size:11.5px;color:var(--muted);margin-top:-2px}
+
+  /* ---------- 挂号单 ---------- */
+  .slip{
+    position:relative;background:#fff;border:1px solid #dde6e4;border-radius:2px;
+    padding:20px 20px 18px;box-shadow:0 26px 46px -34px rgba(9,43,50,.45);
+  }
+  .slip::before{
+    content:"";position:absolute;left:-1px;right:-1px;top:-1px;height:8px;
+    background:radial-gradient(circle at 5px 0,transparent 4.6px,#dfe8e6 4.6px,#dfe8e6 5px,transparent 5px) 0 0/10px 8px repeat-x;
+  }
+  .slip-head{text-align:center;padding:6px 0 12px;border-bottom:1px dashed #cedbd9}
+  .slip-host{font-family:var(--serif);font-size:17px;letter-spacing:.3em;text-indent:.3em}
+  .slip-title{font-family:var(--serif);font-size:22px;font-weight:600;letter-spacing:.24em;text-indent:.24em;margin-top:3px}
+  .slip-en{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;color:var(--muted);margin-top:4px}
+  .slip dl{display:grid;grid-template-columns:76px minmax(0,1fr);gap:7px 10px;padding:14px 0;font-size:13px}
+  .slip dt{color:var(--muted);letter-spacing:.04em}
+  .slip dd{margin:0;color:var(--ink);word-break:break-all}
+  .slip dd.num{font-family:var(--mono);letter-spacing:.02em}
+  .slip .divider{border-top:1px dashed #cedbd9;margin:0 -2px}
+  .slip-foot{padding-top:12px}
+  .barcode{display:flex;align-items:stretch;height:44px;gap:1px;margin:4px 0 6px}
+  .barcode span{display:block;background:var(--ink)}
+  .bc-num{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--ink-2);text-align:center}
+  .slip-note{font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:10px;text-align:center}
+  .seal{
+    position:absolute;right:22px;bottom:104px;width:88px;height:88px;border:2px solid var(--seal);
+    border-radius:50%;color:var(--seal);display:grid;place-items:center;text-align:center;
+    transform:rotate(-13deg);opacity:.86;pointer-events:none;
+  }
+  .seal::before{content:"";position:absolute;inset:4px;border:1px solid var(--seal);border-radius:50%;opacity:.55}
+  .seal .s1{font-family:var(--serif);font-size:15px;letter-spacing:.12em;line-height:1.3}
+  .seal .s2{font-size:8.5px;letter-spacing:.1em;margin-top:1px}
+  .seal.press{animation:press .32s cubic-bezier(.2,.9,.3,1.4) both}
+  @keyframes press{from{opacity:0;transform:rotate(-13deg) scale(1.6)}to{opacity:.86;transform:rotate(-13deg) scale(1)}}
+  .seal.void{border-color:#8c9a9b;color:#8c9a9b;opacity:.7}
+  .slip-empty{
+    border:1px dashed #c3d3d1;background:rgba(255,255,255,.55);border-radius:2px;
+    padding:38px 22px;text-align:center;color:var(--muted);font-size:13px;line-height:1.8;
+  }
+  .slip-empty .g{font-family:var(--serif);font-size:17px;letter-spacing:.28em;color:#9fb3b3;text-indent:.28em;margin-bottom:6px}
+  .side-actions{display:flex;gap:8px;margin-top:12px}
+  .side-actions .btn{flex:1}
+  .notice{margin-top:18px;font-size:11.5px;color:var(--muted);line-height:1.8;border-top:1px solid var(--line);padding-top:12px}
+  .notice b{color:var(--ink-2);font-weight:600}
+
+  /* ---------- 我的挂号 ---------- */
+  .records-head{max-width:780px}
+  .page-title{font-family:var(--serif);font-size:30px;font-weight:600;letter-spacing:.12em}
+  .page-sub{color:var(--muted);font-size:13.5px;margin-top:6px}
+  .lookup{display:flex;gap:9px;margin-top:20px;max-width:560px}
+  .lookup input{
+    flex:1;padding:10px 13px;border:1px solid #cbd9d7;border-radius:2px;background:#fff;
+    font:inherit;font-size:14px;
+  }
+  .lookup input:focus{outline:none;border-color:var(--sign);box-shadow:0 0 0 3px rgba(14,111,125,.13)}
+  .record-list{margin-top:26px;border-top:1px solid var(--line);max-width:820px}
+  .rec{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;padding:18px 0;border-bottom:1px solid var(--line)}
+  .rec-when{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .rec-date{font-family:var(--serif);font-size:18px;letter-spacing:.04em}
+  .rec-time{font-family:var(--mono);font-size:14px;color:var(--ink-2)}
+  .rec-main{margin-top:6px;font-size:13.5px;color:var(--ink-2)}
+  .rec-main .sep{color:#b9c9c8;margin:0 7px}
+  .rec-meta{margin-top:5px;font-size:12px;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap}
+  .rec-meta .mono{font-family:var(--mono);letter-spacing:.02em}
+  .rec-actions{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .tag{font-size:11.5px;padding:1px 8px;border-radius:2px;border:1px solid;letter-spacing:.06em;white-space:nowrap}
+  .tag.wait{color:var(--sign);border-color:#9dc3c6;background:#eef7f7}
+  .tag.done{color:#5b7375;border-color:#cdd9d8;background:#f4f7f7}
+  .tag.void{color:var(--seal);border-color:#e0b6ae;background:#fbf1ef}
+  .empty-state{padding:48px 0;color:var(--muted);font-size:13.5px;text-align:center}
+  .empty-state .big{font-family:var(--serif);font-size:18px;letter-spacing:.16em;color:var(--ink-2);margin-bottom:6px}
+
+  /* ---------- 提示 ---------- */
+  #toast{
+    position:fixed;left:50%;bottom:32px;transform:translate(-50%,14px);
+    background:var(--ink);color:#f0f6f5;padding:11px 20px;border-radius:2px;font-size:13.5px;
+    opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;z-index:50;max-width:88vw;
+  }
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+  dialog{
+    border:1px solid var(--line);border-radius:2px;padding:0;width:min(400px,92vw);
+    background:#fff;color:var(--ink);box-shadow:0 30px 60px -30px rgba(9,43,50,.5);
+  }
+  dialog::backdrop{background:rgba(9,43,50,.45)}
+  .dlg-body{padding:24px 24px 8px}
+  .dlg-title{font-family:var(--serif);font-size:19px;letter-spacing:.08em}
+  .dlg-text{font-size:13.5px;color:var(--ink-2);margin-top:8px;line-height:1.75}
+  .dlg-actions{display:flex;justify-content:flex-end;gap:9px;padding:18px 24px 22px}
+
+  #printOnly{display:none}
+
+  @media (max-width:1040px){
+    .layout{grid-template-columns:minmax(0,1fr) 330px;gap:28px}
+    .dept-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  }
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr}
+    .side{position:static;order:2}
+    .dept-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  }
+  @media (max-width:620px){
+    .wrap{padding:22px 16px 56px}
+    .mast-inner{padding:0 16px}
+    .mast-top{padding:16px 0 10px;gap:8px}
+    .brand-mark{font-size:23px;letter-spacing:.12em}
+    .brand-sub{font-size:11px;letter-spacing:.28em;text-indent:.28em}
+    .mast-meta{text-align:left;font-size:11.5px;line-height:1.55}
+    .mast-meta strong{font-size:12.5px}
+    .tab{padding:10px 2px 9px;font-size:13.5px}
+    .tabs{gap:20px}
+    .dept-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .step{grid-template-columns:28px minmax(0,1fr);gap:10px;padding:20px 0}
+    .step-title{font-size:18px}
+    .form-grid{grid-template-columns:1fr}
+    .doc{grid-template-columns:36px minmax(0,1fr) auto;padding:10px 12px}
+    .doc .ava{width:36px;height:36px;font-size:15px}
+    .rec{grid-template-columns:1fr;gap:12px}
+    .rec-actions{flex-direction:row;align-items:center;justify-content:space-between}
+    .page-title{font-size:25px}
+    .slip{order:1}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+  }
+
+  @media print{
+    body{background:#fff}
+    body>*{display:none!important}
+    body>#printOnly{display:block!important}
+    #printOnly .slip{box-shadow:none;border-color:#b9c6c5;width:82mm;margin:0 auto;padding:16px}
+    #printOnly .seal{bottom:96px}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="mast-inner">
+    <div class="mast-top">
+      <div class="brand">
+        <div class="brand-mark">仁和医院</div>
+        <div class="brand-sub">门诊自助挂号</div>
+      </div>
+      <div class="mast-meta">
+        <strong id="todayLine">—</strong>
+        <div>门诊时间 08:00–12:00 · 13:30–17:00</div>
+      </div>
+    </div>
+    <div class="tabs" role="tablist" aria-label="页面">
+      <button class="tab is-active" role="tab" data-view="register" aria-selected="true">自助挂号</button>
+      <button class="tab" role="tab" data-view="records" aria-selected="false">我的挂号</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="view" id="viewRegister">
+    <div class="layout">
+      <div class="flow">
+
+        <section class="step" data-step="1">
+          <div class="step-num">01</div>
+          <div class="step-body">
+            <h2 class="step-title">选择科室</h2>
+            <p class="step-hint">按病情选择科室，不确定时可选内科初诊。</p>
+            <div class="dept-grid" id="deptGrid"></div>
+          </div>
+        </section>
+
+        <section class="step is-locked" data-step="2">
+          <div class="step-num">02</div>
+          <div class="step-body">
+            <h2 class="step-title">选择医生</h2>
+            <p class="step-hint" id="hint2">先选择科室。</p>
+            <div class="doc-list" id="docList"></div>
+          </div>
+        </section>
+
+        <section class="step is-locked" data-step="3">
+          <div class="step-num">03</div>
+          <div class="step-body">
+            <h2 class="step-title">选择就诊时间</h2>
+            <p class="step-hint" id="hint3">先选择医生。</p>
+            <div class="dates" id="dateList"></div>
+            <div id="slotArea"></div>
+          </div>
+        </section>
+
+        <section class="step is-locked" data-step="4">
+          <div class="step-num">04</div>
+          <div class="step-body">
+            <h2 class="step-title">就诊人信息</h2>
+            <p class="step-hint" id="hint4">先选择就诊时段。</p>
+            <div id="patientArea"></div>
+          </div>
+        </section>
+
+      </div>
+
+      <aside class="side">
+        <div id="slipArea"></div>
+        <div class="side-actions" id="slipActions"></div>
+        <p class="notice">
+          <b>就诊提示</b><br>
+          请于就诊前 15 分钟到达对应诊室，凭挂号单候诊。<br>
+          当日号源以实际剩余为准，挂号后可在「我的挂号」中退号。
+        </p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="view" id="viewRecords" hidden>
+    <div class="records-head">
+      <h1 class="page-title">我的挂号</h1>
+      <p class="page-sub">用挂号时填写的手机号、身份证号或挂号单号查询，可退号或补打挂号单。</p>
+      <form class="lookup" id="lookupForm">
+        <input id="lookupInput" placeholder="手机号 / 身份证号 / 挂号单号" autocomplete="off" aria-label="查询条件">
+        <button class="btn btn-primary" type="submit">查询</button>
+      </form>
+    </div>
+    <div class="record-list" id="recordList"></div>
+  </section>
+</main>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<dialog id="cancelDlg">
+  <div class="dlg-body">
+    <h2 class="dlg-title">确认退号</h2>
+    <p class="dlg-text" id="cancelText"></p>
+  </div>
+  <div class="dlg-actions">
+    <button class="btn btn-ghost" value="no" id="cancelNo">保留号源</button>
+    <button class="btn btn-primary" value="yes" id="cancelYes">确认退号</button>
+  </div>
+</dialog>
+
+<div id="printOnly"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ========== 数据 ========== */
+  var DEPTS = [
+    { id:'nk', name:'内科',   sub:'慢病 · 呼吸 · 消化' },
+    { id:'wk', name:'外科',   sub:'普外 · 换药 · 小手术' },
+    { id:'ek', name:'儿科',   sub:'14 岁以下患儿' },
+    { id:'fk', name:'妇产科', sub:'妇科 · 产科' },
+    { id:'gk', name:'骨科',   sub:'创伤 · 关节 · 脊柱' },
+    { id:'yk', name:'眼科',   sub:'视力 · 眼底 · 干眼' },
+    { id:'ebh',name:'耳鼻喉科',sub:'鼻 · 咽 · 耳' },
+    { id:'pf', name:'皮肤科', sub:'皮炎 · 痤疮 · 脱发' },
+    { id:'kq', name:'口腔科', sub:'牙体 · 牙周 · 修复' },
+    { id:'zy', name:'中医科', sub:'调理 · 针灸 · 推拿' }
+  ];
+
+  var DOCTORS = [
+    { id:'nk1', dept:'nk', name:'陈立文', title:'主任医师',   spec:'高血压、糖尿病、血脂异常等慢病随访', room:'内科 3 诊室', fee:50, work:[1,3,5],     half:'am' },
+    { id:'nk2', dept:'nk', name:'周敏',   title:'副主任医师', spec:'呼吸道感染、慢性咳嗽、慢阻肺',       room:'内科 2 诊室', fee:30, work:[2,4,6],     half:'all' },
+    { id:'nk3', dept:'nk', name:'林慧',   title:'主治医师',   spec:'发热、乏力、胃肠不适初诊',           room:'内科 1 诊室', fee:20, work:[1,2,3,4,5], half:'pm' },
+
+    { id:'wk1', dept:'wk', name:'赵剑峰', title:'主任医师',   spec:'甲状腺、乳腺结节评估与手术咨询',     room:'外科 2 诊室', fee:50, work:[2,5],       half:'am' },
+    { id:'wk2', dept:'wk', name:'吴海涛', title:'副主任医师', spec:'疝气、阑尾、胆囊等腹部外科',         room:'外科 1 诊室', fee:30, work:[1,3,6],     half:'all' },
+    { id:'wk3', dept:'wk', name:'郑康',   title:'主治医师',   spec:'清创缝合、换药、体表肿物',           room:'外科处置室',  fee:20, work:[2,3,4,5],   half:'pm' },
+
+    { id:'ek1', dept:'ek', name:'李晓晴', title:'主任医师',   spec:'儿童哮喘、过敏性鼻炎',               room:'儿科 2 诊室', fee:50, work:[1,4,6],     half:'am' },
+    { id:'ek2', dept:'ek', name:'孙宇',   title:'副主任医师', spec:'小儿发热、腹泻、手足口病',           room:'儿科 1 诊室', fee:30, work:[1,2,3,4,5], half:'all' },
+    { id:'ek3', dept:'ek', name:'何佳',   title:'主治医师',   spec:'儿童保健、喂养与生长发育咨询',       room:'儿科 3 诊室', fee:20, work:[3,5,6],     half:'pm' },
+
+    { id:'fk1', dept:'fk', name:'王雅琴', title:'主任医师',   spec:'妇科肿瘤、月经失调、更年期',         room:'妇产科 2 诊室', fee:50, work:[2,4],     half:'am' },
+    { id:'fk2', dept:'fk', name:'刘思远', title:'副主任医师', spec:'孕期检查、产后复查',                 room:'妇产科 1 诊室', fee:30, work:[1,3,5],   half:'all' },
+    { id:'fk3', dept:'fk', name:'张蕾',   title:'主治医师',   spec:'妇科炎症、计划生育咨询',             room:'妇产科 3 诊室', fee:20, work:[2,4,6],   half:'pm' },
+
+    { id:'gk1', dept:'gk', name:'高志强', title:'主任医师',   spec:'关节置换、腰椎间盘突出',             room:'骨科 2 诊室', fee:50, work:[1,3,5],     half:'am' },
+    { id:'gk2', dept:'gk', name:'马文博', title:'副主任医师', spec:'骨折复位、运动损伤、石膏固定',       room:'骨科 1 诊室', fee:30, work:[2,4,6],     half:'all' },
+    { id:'gk3', dept:'gk', name:'徐斌',   title:'主治医师',   spec:'颈肩腰腿痛、骨质疏松',               room:'骨科 3 诊室', fee:20, work:[1,2,4,5],   half:'pm' },
+
+    { id:'yk1', dept:'yk', name:'黄文静', title:'主任医师',   spec:'白内障、青光眼',                     room:'眼科 2 诊室', fee:50, work:[2,5],       half:'am' },
+    { id:'yk2', dept:'yk', name:'沈可',   title:'副主任医师', spec:'近视防控、干眼症',                   room:'眼科 1 诊室', fee:30, work:[1,3,4,6],   half:'all' },
+    { id:'yk3', dept:'yk', name:'唐颖',   title:'主治医师',   spec:'结膜炎、验光配镜',                   room:'眼科 3 诊室', fee:20, work:[1,2,3,4],   half:'pm' },
+
+    { id:'ebh1',dept:'ebh',name:'罗永康', title:'主任医师',   spec:'鼻窦炎、鼾症、咽喉肿瘤',             room:'耳鼻喉科 2 诊室', fee:50, work:[1,4],   half:'am' },
+    { id:'ebh2',dept:'ebh',name:'蒋雪',   title:'副主任医师', spec:'咽喉炎、中耳炎、听力下降',           room:'耳鼻喉科 1 诊室', fee:30, work:[2,3,5,6], half:'all' },
+    { id:'ebh3',dept:'ebh',name:'邓超',   title:'主治医师',   spec:'耳鸣、鼻出血、异物取出',             room:'耳鼻喉科 3 诊室', fee:20, work:[1,2,4],   half:'pm' },
+
+    { id:'pf1', dept:'pf', name:'苏婉',   title:'主任医师',   spec:'银屑病、湿疹、白癜风',               room:'皮肤科 2 诊室', fee:50, work:[3,6],     half:'am' },
+    { id:'pf2', dept:'pf', name:'曹志明', title:'副主任医师', spec:'痤疮、脱发、色素性疾病',             room:'皮肤科 1 诊室', fee:30, work:[1,2,4,5],   half:'all' },
+    { id:'pf3', dept:'pf', name:'白露',   title:'主治医师',   spec:'荨麻疹、接触性皮炎',                 room:'皮肤科 3 诊室', fee:20, work:[2,3,4,5],   half:'pm' },
+
+    { id:'kq1', dept:'kq', name:'韩磊',   title:'主任医师',   spec:'种植牙、颌面部外科',                 room:'口腔科 2 诊室', fee:50, work:[1,3,6],   half:'am' },
+    { id:'kq2', dept:'kq', name:'顾晓东', title:'副主任医师', spec:'根管治疗、牙周病',                   room:'口腔科 1 诊室', fee:30, work:[2,4,5],     half:'all' },
+    { id:'kq3', dept:'kq', name:'汪莉',   title:'主治医师',   spec:'洗牙、补牙、口腔常规检查',           room:'口腔科 3 诊室', fee:20, work:[1,2,3,4,5], half:'pm' },
+
+    { id:'zy1', dept:'zy', name:'沈国华', title:'主任医师',   spec:'脾胃病、失眠、慢性疲劳',             room:'中医科 2 诊室', fee:50, work:[2,5],       half:'am' },
+    { id:'zy2', dept:'zy', name:'叶青',   title:'副主任医师', spec:'针灸推拿、颈肩腰痛',                 room:'中医科 1 诊室', fee:30, work:[1,3,4,6],   half:'all' },
+    { id:'zy3', dept:'zy', name:'何雨桐', title:'主治医师',   spec:'体质调理、亚健康、女性调理',         room:'中医科 3 诊室', fee:20, work:[1,2,4],     half:'pm' }
+  ];
+
+  var AM = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30'];
+  var PM = ['13:30','14:00','14:30','15:00','15:30','16:00','16:30'];
+  var WD = ['周日','周一','周二','周三','周四','周五','周六'];
+  var STORE_KEY = 'renhe-gh-v1';
+
+  /* ========== 工具 ========== */
+  function $(s, r) { return (r || document).querySelector(s); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+  function hashStr(s) {
+    var h = 2166136261;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return h >>> 0;
+  }
+  function makeRnd(seed) {
+    var t = seed >>> 0;
+    return function () {
+      t = (t + 0x6D2B79F5) >>> 0;
+      var x = Math.imul(t ^ (t >>> 15), t | 1);
+      x ^= x + Math.imul(x ^ (x >>> 7), x | 61);
+      return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function iso(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function parseISO(s) {
+    var p = s.split('-');
+    return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+  }
+  function dateCn(s) {
+    var d = parseISO(s);
+    return (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + WD[d.getDay()];
+  }
+  function todayISO() {
+    var d = new Date(); d.setHours(0, 0, 0, 0); return iso(d);
+  }
+  function periodOf(slot) { return Number(slot.split(':')[0]) < 12 ? '上午' : '下午'; }
+  function doctor(id) {
+    for (var i = 0; i < DOCTORS.length; i++) if (DOCTORS[i].id === id) return DOCTORS[i];
+    return null;
+  }
+  function dept(id) {
+    for (var i = 0; i < DEPTS.length; i++) if (DEPTS[i].id === id) return DEPTS[i];
+    return null;
+  }
+
+  /* ========== 存储 ========== */
+  var appointments = load();
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) { return []; }
+  }
+  function save() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(appointments)); } catch (e) {}
+  }
+
+  /* ========== 号源 ========== */
+  function slotInfo(docId, date, slot) {
+    var seed = hashStr(docId + '|' + date + '|' + slot);
+    var capacity = 4 + (seed % 5);
+    var seeded = Math.floor(makeRnd(seed)() * capacity);
+    var local = 0;
+    for (var i = 0; i < appointments.length; i++) {
+      var a = appointments[i];
+      if (a.doctorId === docId && a.date === date && a.slot === slot && a.status === '待就诊') local++;
+    }
+    return { capacity: capacity, booked: seeded + local, left: capacity - seeded - local };
+  }
+  function isPast(date, slot) {
+    var d = parseISO(date);
+    var p = slot.split(':');
+    d.setHours(Number(p[0]), Number(p[1]), 0, 0);
+    return d.getTime() < Date.now();
+  }
+  function slotsFor(doc) {
+    var out = [];
+    if (doc.half !== 'pm') out = out.concat(AM);
+    if (doc.half !== 'am') out = out.concat(PM);
+    return out;
+  }
+  function daysFor(doc) {
+    var out = [], t = new Date(); t.setHours(0, 0, 0, 0);
+    for (var i = 0; i < 7; i++) {
+      var d = new Date(t); d.setDate(t.getDate() + i);
+      var s = iso(d);
+      if (doc.work.indexOf(d.getDay()) < 0) continue;
+      var bookable = slotsFor(doc).some(function (slot) { return !isPast(s, slot); });
+      if (bookable) out.push(s);
+    }
+    return out;
+  }
+  function firstBookableDate(doc, days) {
+    for (var i = 0; i < days.length; i++) {
+      var ok = slotsFor(doc).some(function (slot) {
+        return !isPast(days[i], slot) && slotInfo(doc.id, days[i], slot).left > 0;
+      });
+      if (ok) return days[i];
+    }
+    return days[0] || null;
+  }
+
+  /* ========== 身份证 ========== */
+  function checkIdCard(id) {
+    id = String(id || '').trim().toUpperCase();
+    if (!/^\d{17}[\dX]$/.test(id)) return { ok: false, msg: '身份证号应为 18 位' };
+    var w = [7,9,10,5,8,4,2,1,6,3,7,9,10,5,8,4,2];
+    var codes = ['1','0','X','9','8','7','6','5','4','3','2'];
+    var sum = 0;
+    for (var i = 0; i < 17; i++) sum += Number(id[i]) * w[i];
+    if (codes[sum % 11] !== id[17]) return { ok: false, msg: '身份证号校验不通过，请核对' };
+    return { ok: true, id: id };
+  }
+  function idInfo(id) {
+    var y = Number(id.slice(6, 10)), m = Number(id.slice(10, 12)), d = Number(id.slice(12, 14));
+    var birth = new Date(y, m - 1, d);
+    var now = new Date();
+    var age = now.getFullYear() - birth.getFullYear();
+    if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) age--;
+    var gender = Number(id[16]) % 2 === 1 ? '男' : '女';
+    return { gender: gender, age: age };
+  }
+
+  /* ========== 状态 ========== */
+  var state = { dept: null, doctor: null, date: null, slot: null, booked: null, query: '' };
+
+  /* ========== 渲染：科室 ========== */
+  function renderDepts() {
+    var html = '';
+    for (var i = 0; i < DEPTS.length; i++) {
+      var d = DEPTS[i];
+      html += '<button type="button" class="dept" data-dept="' + d.id + '" aria-pressed="' +
+        (state.dept === d.id ? 'true' : 'false') + '">' +
+        '<span class="name">' + esc(d.name) + '</span>' +
+        '<span class="sub">' + esc(d.sub) + '</span></button>';
+    }
+    $('#deptGrid').innerHTML = html;
+  }
+
+  /* ========== 渲染：医生 ========== */
+  function renderDoctors() {
+    var step = document.querySelector('[data-step="2"]');
+    var list = $('#docList');
+    if (!state.dept) {
+      step.classList.add('is-locked');
+      $('#hint2').textContent = '先选择科室。';
+      list.innerHTML = '';
+      return;
+    }
+    step.classList.remove('is-locked');
+    var docs = DOCTORS.filter(function (d) { return d.dept === state.dept; });
+    $('#hint2').textContent = dept(state.dept).name + ' 今日出诊医生 ' + docs.length + ' 位，挂号费按职称收取。';
+    var html = '';
+    docs.forEach(function (d) {
+      html += '<button type="button" class="doc" data-doc="' + d.id + '" aria-pressed="' +
+        (state.doctor === d.id ? 'true' : 'false') + '">' +
+        '<span class="ava">' + esc(d.name.charAt(0)) + '</span>' +
+        '<span><span class="nm">' + esc(d.name) + '<span class="tt">' + esc(d.title) + '</span></span>' +
+        '<span class="spec">' + esc(d.spec) + '</span></span>' +
+        '<span class="fee">¥' + d.fee + '<small>' + esc(d.room) + '</small></span>' +
+        '</button>';
+    });
+    list.innerHTML = html;
+  }
+
+  /* ========== 渲染：日期与时段 ========== */
+  function renderDates() {
+    var step = document.querySelector('[data-step="3"]');
+    var hint = $('#hint3');
+    if (!state.doctor) {
+      step.classList.add('is-locked');
+      hint.textContent = '先选择医生。';
+      $('#dateList').innerHTML = '';
+      $('#slotArea').innerHTML = '';
+      return;
+    }
+    step.classList.remove('is-locked');
+    var doc = doctor(state.doctor);
+    var days = daysFor(doc);
+    if (!days.length) {
+      hint.textContent = doc.name + ' ' + doc.title + ' 未来 7 天已无号源。';
+      $('#dateList').innerHTML = '';
+      $('#slotArea').innerHTML = '';
+      return;
+    }
+    if (!state.date || days.indexOf(state.date) < 0) state.date = firstBookableDate(doc, days);
+    hint.textContent = doc.name + ' ' + doc.title + ' · 未来 7 天内出诊 ' + days.length + ' 天，每人限挂 1 个号。';
+    var t0 = new Date(); t0.setHours(0, 0, 0, 0);
+    var html = '';
+    days.forEach(function (s) {
+      var d = parseISO(s);
+      var diff = Math.round((d - t0) / 86400000);
+      var label = diff === 0 ? '今天' : (diff === 1 ? '明天' : WD[d.getDay()]);
+      html += '<button type="button" class="date" data-date="' + s + '" aria-pressed="' +
+        (state.date === s ? 'true' : 'false') + '">' +
+        '<span class="d1">' + label + '</span>' +
+        '<span class="d2">' + (d.getMonth() + 1) + '/' + d.getDate() + '</span></button>';
+    });
+    $('#dateList').innerHTML = html;
+    renderSlots();
+  }
+
+  function renderSlots() {
+    var area = $('#slotArea');
+    if (!state.date) { area.innerHTML = ''; return; }
+    var doc = doctor(state.doctor);
+    var all = slotsFor(doc);
+    var groups = { '上午': [], '下午': [] };
+    all.forEach(function (s) {
+      var info = slotInfo(doc.id, state.date, s);
+      var past = isPast(state.date, s);
+      var disabled = info.left <= 0 || past;
+      var right = past ? '已过号' : (info.left <= 0 ? '已满' : '余 ' + info.left);
+      groups[periodOf(s)].push(
+        '<button type="button" class="slot" data-slot="' + s + '" aria-pressed="' +
+        (state.slot === s ? 'true' : 'false') + '"' + (disabled ? ' disabled' : '') + '>' +
+        '<span class="t">' + s + '</span><span class="r">' + right + '</span></button>'
+      );
+    });
+    var html = '';
+    ['上午', '下午'].forEach(function (p) {
+      if (!groups[p].length) return;
+      if (p === '下午' && groups['上午'].length) html += '<p class="period">下午门诊</p>';
+      else html += '<p class="period">' + p + '门诊</p>';
+      html += '<div class="slots">' + groups[p].join('') + '</div>';
+    });
+    area.innerHTML = html;
+  }
+
+  /* ========== 渲染：就诊人信息 ========== */
+  function renderPatient() {
+    var step = document.querySelector('[data-step="4"]');
+    var area = $('#patientArea');
+    var hint = $('#hint4');
+    if (!state.slot) {
+      step.classList.add('is-locked');
+      hint.textContent = '先选择就诊时段。';
+      area.innerHTML = '';
+      return;
+    }
+    step.classList.remove('is-locked');
+    hint.textContent = '信息仅保存在本机浏览器，用于取号与退号。';
+    var doc = doctor(state.doctor);
+    area.innerHTML =
+      '<form class="form-grid reveal" id="bookForm" novalidate>' +
+        '<div class="field"><label for="pName">就诊人姓名</label>' +
+          '<input id="pName" name="name" autocomplete="name" placeholder="与身份证一致" maxlength="20">' +
+          '<div class="hint" id="eName"></div></div>' +
+        '<div class="field"><label for="pId">身份证号</label>' +
+          '<input id="pId" name="idCard" autocomplete="off" inputmode="text" placeholder="18 位身份证号" maxlength="18">' +
+          '<div class="hint" id="eId">自动识别性别与年龄</div></div>' +
+        '<div class="field full"><label for="pPhone">手机号</label>' +
+          '<input id="pPhone" name="phone" autocomplete="tel" inputmode="numeric" placeholder="11 位手机号，用于查询与退号" maxlength="11">' +
+          '<div class="hint" id="ePhone"></div></div>' +
+        '<div class="submit-bar">' +
+          '<div class="total">挂号费<b>¥' + doc.fee + '</b></div>' +
+          '<button class="btn btn-primary" type="submit" id="submitBtn">确认挂号</button>' +
+        '</div>' +
+        '<p class="fineprint">挂号成功后生成挂号单，请按就诊序号到 ' + esc(doc.room) + ' 候诊。</p>' +
+      '</form>';
+
+    var idInput = $('#pId');
+    idInput.addEventListener('input', function () {
+      var v = idInput.value.trim().toUpperCase();
+      var hintEl = $('#eId');
+      if (v.length === 18) {
+        var r = checkIdCard(v);
+        if (r.ok) {
+          var info = idInfo(v);
+          $('#pName').value = $('#pName').value;
+          hintEl.textContent = info.gender + ' · ' + info.age + ' 岁';
+          hintEl.classList.remove('err');
+        } else {
+          hintEl.textContent = r.msg;
+          hintEl.classList.add('err');
+        }
+      } else {
+        hintEl.textContent = '自动识别性别与年龄';
+        hintEl.classList.remove('err');
+      }
+    });
+    $('#bookForm').addEventListener('submit', submitBooking);
+  }
+
+  /* ========== 挂号单 ========== */
+  function barcodeMarkup(id) {
+    var r = makeRnd(hashStr(id || 'empty'));
+    var html = '';
+    for (var i = 0; i < 62; i++) {
+      var dark = r() > 0.38;
+      var w = 1 + Math.floor(r() * 2);
+      html += '<span style="width:' + (dark ? w : 1) + 'px;' +
+        (dark ? '' : 'background:transparent') + '"></span>';
+    }
+    return html;
+  }
+
+  function slipMarkup(a, draft) {
+    var d = a || draft;
+    var rows;
+    if (a) {
+      rows = '' +
+        '<dt>挂号单号</dt><dd class="num">' + esc(a.id) + '</dd>' +
+        '<dt>科室</dt><dd>' + esc(a.deptName) + '</dd>' +
+        '<dt>医生</dt><dd>' + esc(a.doctorName) + ' <span style="color:#6f878c;font-size:12px">' + esc(a.title) + '</span></dd>' +
+        '<dt>就诊时间</dt><dd>' + dateCn(a.date) + ' ' + a.slot + '</dd>' +
+        '<dt>就诊序号</dt><dd class="num">' + esc(a.seq) + ' 号</dd>' +
+        '<dt>诊室</dt><dd>' + esc(a.room) + '</dd>' +
+        '<div class="divider" style="grid-column:1/-1"></div>' +
+        '<dt>就诊人</dt><dd>' + esc(a.patient.name) + '</dd>' +
+        '<dt>性别年龄</dt><dd>' + esc(a.patient.gender) + ' · ' + a.patient.age + ' 岁</dd>' +
+        '<dt>手机号</dt><dd class="num">' + esc(a.patient.phone) + '</dd>' +
+        '<dt>挂号费</dt><dd class="num">¥' + a.fee + '</dd>' +
+        '<dt>状态</dt><dd>' + esc(a.status === '已退号' ? '已退号' : '待就诊') + '</dd>';
+    } else {
+      var dd = function (v, cls) {
+        return '<dd class="' + (cls || '') + '" style="' + (v ? '' : 'color:#b3c2c2') + '">' + (v ? esc(v) : '—') + '</dd>';
+      };
+      rows = '' +
+        '<dt>挂号单号</dt>' + dd('确认后生成', 'num') +
+        '<dt>科室</dt>' + dd(d && d.deptName) +
+        '<dt>医生</dt>' + dd(d && d.doctorName ? d.doctorName + ' ' + d.title : '') +
+        '<dt>就诊时间</dt>' + dd(d && d.date ? dateCn(d.date) + ' ' + d.slot : '') +
+        '<dt>就诊序号</dt>' + dd(d && d.seq ? d.seq + ' 号' : '') +
+        '<dt>诊室</dt>' + dd(d && d.room) +
+        '<div class="divider" style="grid-column:1/-1"></div>' +
+        '<dt>就诊人</dt>' + dd('') +
+        '<dt>性别年龄</dt>' + dd('') +
+        '<dt>手机号</dt>' + dd('') +
+        '<dt>挂号费</dt>' + dd(d && d.fee ? '¥' + d.fee : '') +
+        '<dt>状态</dt>' + dd('待确认');
+    }
+
+    var voided = a && a.status === '已退号';
+    var seal = a
+      ? '<div class="seal ' + (voided ? 'void' : 'press') + '">' +
+          '<div><div class="s1">' + (voided ? '已退号' : '已挂号') + '</div>' +
+          '<div class="s2">仁和医院 挂号专用</div></div></div>'
+      : '';
+
+    return '<div class="slip">' +
+      '<div class="slip-head">' +
+        '<div class="slip-host">仁和医院</div>' +
+        '<div class="slip-title">门诊挂号单</div>' +
+        '<div class="slip-en">RENHE HOSPITAL · OUTPATIENT REGISTRATION</div>' +
+      '</div>' +
+      '<dl>' + rows + '</dl>' +
+      '<div class="divider"></div>' +
+      '<div class="slip-foot">' +
+        '<div class="barcode">' + barcodeMarkup(a ? a.id : 'draft') + '</div>' +
+        '<div class="bc-num">' + (a ? esc(a.id) : 'NO. —') + '</div>' +
+        '<p class="slip-note">' + (a
+          ? (voided ? '该号已退，如需就诊请重新挂号。' : '请于就诊前 15 分钟到诊室候诊。')
+          : '选定科室、医生与时段后，自动生成挂号单。') + '</p>' +
+      '</div>' +
+      seal +
+    '</div>';
+  }
+
+  function renderSlip() {
+    var area = $('#slipArea');
+    var actions = $('#slipActions');
+    if (state.booked) {
+      area.innerHTML = slipMarkup(state.booked, null);
+      var s = state.booked;
+      actions.innerHTML =
+        (s.status === '待就诊'
+          ? '<button class="btn btn-ghost btn-sm" type="button" data-print="' + s.id + '">打印挂号单</button>' +
+            '<button class="btn btn-ghost btn-sm" type="button" data-cancel="' + s.id + '">退号</button>'
+          : '<button class="btn btn-ghost btn-sm" type="button" data-print="' + s.id + '">打印凭证</button>');
+      return;
+    }
+    if (!state.dept) {
+      area.innerHTML = '<div class="slip-empty"><div class="g">挂号单</div>选择科室后，挂号单会在这里同步生成。</div>';
+      actions.innerHTML = '';
+      return;
+    }
+    var doc = state.doctor ? doctor(state.doctor) : null;
+    var draft = {
+      deptName: dept(state.dept).name,
+      doctorName: doc ? doc.name : '',
+      title: doc ? doc.title : '',
+      room: doc ? doc.room : '',
+      fee: doc ? doc.fee : 0,
+      date: state.date,
+      slot: state.slot,
+      seq: ''
+    };
+    area.innerHTML = slipMarkup(null, draft);
+    actions.innerHTML = '';
+  }
+
+  /* ========== 交互 ========== */
+  $('#deptGrid').addEventListener('click', function (e) {
+    var btn = e.target.closest('.dept');
+    if (!btn) return;
+    var id = btn.getAttribute('data-dept');
+    state.dept = id === state.dept ? null : id;
+    state.doctor = null; state.date = null; state.slot = null; state.booked = null;
+    renderDepts(); renderDoctors(); renderDates(); renderPatient(); renderSlip();
+  });
+
+  $('#docList').addEventListener('click', function (e) {
+    var btn = e.target.closest('.doc');
+    if (!btn) return;
+    var id = btn.getAttribute('data-doc');
+    state.doctor = id === state.doctor ? null : id;
+    state.date = null; state.slot = null; state.booked = null;
+    var doc = state.doctor ? doctor(state.doctor) : null;
+    var days = doc ? daysFor(doc) : [];
+    state.date = days.length ? firstBookableDate(doc, days) : null;
+    renderDoctors(); renderDates(); renderPatient(); renderSlip();
+  });
+
+  $('#dateList').addEventListener('click', function (e) {
+    var btn = e.target.closest('.date');
+    if (!btn) return;
+    state.date = btn.getAttribute('data-date');
+    state.slot = null; state.booked = null;
+    renderDates(); renderPatient(); renderSlip();
+  });
+
+  $('#slotArea').addEventListener('click', function (e) {
+    var btn = e.target.closest('.slot');
+    if (!btn || btn.disabled) return;
+    state.slot = btn.getAttribute('data-slot');
+    state.booked = null;
+    renderSlots(); renderPatient(); renderSlip();
+    var name = $('#pName');
+    if (name) name.focus({ preventScroll: true });
+  });
+
+  function setHint(id, msg, isErr) {
+    var el = $('#' + id);
+    if (!el) return;
+    el.textContent = msg || '';
+    el.classList.toggle('err', !!isErr);
+  }
+
+  function submitBooking(e) {
+    e.preventDefault();
+    var nameEl = $('#pName'), idEl = $('#pId'), phoneEl = $('#pPhone');
+    var name = nameEl.value.trim();
+    var idCard = idEl.value.trim().toUpperCase();
+    var phone = phoneEl.value.trim();
+
+    setHint('eName', ''); setHint('eId', ''); setHint('ePhone', '');
+
+    if (!/^[一-龥A-Za-z·\s]{2,20}$/.test(name)) {
+      setHint('eName', '请填写 2–20 位中文或英文姓名', true); nameEl.focus(); return;
+    }
+    var idr = checkIdCard(idCard);
+    if (!idr.ok) {
+      setHint('eId', idr.msg, true); idEl.focus(); return;
+    }
+    if (!/^1[3-9]\d{9}$/.test(phone)) {
+      setHint('ePhone', '请填写 11 位手机号', true); phoneEl.focus(); return;
+    }
+
+    var doc = doctor(state.doctor);
+    for (var i = 0; i < appointments.length; i++) {
+      var a = appointments[i];
+      if (a.status === '待就诊' && a.doctorId === doc.id && a.date === state.date &&
+          a.slot === state.slot && a.patient.idCard === idCard) {
+        toast('该就诊人已挂过这个时段的号，请勿重复挂号');
+        return;
+      }
+    }
+
+    var info = idInfo(idCard);
+    var slot = slotInfo(doc.id, state.date, state.slot);
+    if (slot.left <= 0) {
+      toast('该时段号源刚被挂完，请换一个时段');
+      renderSlots();
+      return;
+    }
+    var seq = slot.booked + 1;
+
+    var appt = {
+      id: 'GH' + state.date.replace(/-/g, '') + '-' + String(appointments.length + 1).padStart(4, '0'),
+      deptId: doc.dept,
+      deptName: dept(doc.dept).name,
+      doctorId: doc.id,
+      doctorName: doc.name,
+      title: doc.title,
+      room: doc.room,
+      fee: doc.fee,
+      date: state.date,
+      slot: state.slot,
+      period: periodOf(state.slot),
+      seq: String(seq).padStart(2, '0'),
+      patient: { name: name, idCard: idCard, phone: phone, gender: info.gender, age: info.age },
+      createdAt: new Date().toISOString(),
+      status: '待就诊'
+    };
+    appointments.push(appt);
+    save();
+
+    state.booked = appt;
+    renderSlots();
+    renderSlip();
+    toast('挂号成功，就诊序号 ' + appt.seq + ' 号');
+
+    var form = $('#bookForm');
+    if (form) {
+      var area = $('#patientArea');
+      area.innerHTML =
+        '<div class="reveal" style="border:1px solid #cfe0dd;background:#f4faf8;padding:18px 20px;margin-top:14px">' +
+          '<p style="font-family:var(--serif);font-size:17px;letter-spacing:.1em">挂号成功</p>' +
+          '<p style="font-size:13px;color:var(--ink-2);margin-top:6px">' +
+            dateCn(appt.date) + ' ' + appt.slot + ' · ' + esc(appt.deptName) + ' ' + esc(appt.doctorName) +
+            ' · 就诊序号 <b style="font-family:var(--mono)">' + esc(appt.seq) + '</b> 号 · ' + esc(appt.room) +
+          '</p>' +
+          '<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">' +
+            '<button class="btn btn-primary btn-sm" type="button" data-print="' + appt.id + '">打印挂号单</button>' +
+            '<button class="btn btn-ghost btn-sm" type="button" data-reset="1">再挂一个号</button>' +
+            '<button class="btn btn-ghost btn-sm" type="button" data-gorecords="1">查看我的挂号</button>' +
+          '</div>' +
+        '</div>';
+    }
+    if (window.matchMedia('(max-width:900px)').matches) {
+      $('#slipArea').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  function resetFlow() {
+    state.dept = null; state.doctor = null; state.date = null; state.slot = null; state.booked = null;
+    renderDepts(); renderDoctors(); renderDates(); renderPatient(); renderSlip();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ========== 我的挂号 ========== */
+  function statusOf(a) {
+    if (a.status === '已退号') return '已退号';
+    if (isPast(a.date, a.slot)) return '已完成';
+    return '待就诊';
+  }
+  function renderRecords() {
+    var q = state.query.trim().toUpperCase();
+    var list = $('#recordList');
+    if (!q) {
+      list.innerHTML = '<div class="empty-state"><div class="big">还没有查询</div>输入手机号、身份证号或挂号单号，查看已挂的号。</div>';
+      return;
+    }
+    var hits = appointments.filter(function (a) {
+      return a.patient.phone === q || a.patient.idCard.toUpperCase() === q || a.id.toUpperCase() === q;
+    }).sort(function (a, b) {
+      return (a.date + a.slot).localeCompare(b.date + b.slot);
+    });
+
+    if (!hits.length) {
+      list.innerHTML = '<div class="empty-state"><div class="big">没有找到挂号记录</div>请确认输入的是挂号时填写的手机号或身份证号。</div>';
+      return;
+    }
+
+    var html = '';
+    hits.forEach(function (a) {
+      var st = statusOf(a);
+      var cls = st === '已退号' ? 'void' : (st === '待就诊' ? 'wait' : 'done');
+      var canCancel = st === '待就诊';
+      html += '<div class="rec" data-id="' + esc(a.id) + '">' +
+        '<div>' +
+          '<div class="rec-when"><span class="rec-date">' + dateCn(a.date) + '</span>' +
+            '<span class="rec-time">' + a.slot + '</span>' +
+            '<span class="tag ' + cls + '">' + st + '</span></div>' +
+          '<div class="rec-main">' + esc(a.deptName) + ' <span class="sep">/</span> ' +
+            esc(a.doctorName) + ' ' + esc(a.title) + ' <span class="sep">/</span> ' +
+            esc(a.room) + '</div>' +
+          '<div class="rec-meta"><span>就诊序号 <span class="mono">' + esc(a.seq) + '</span> 号</span>' +
+            '<span>就诊人 ' + esc(a.patient.name) + '</span>' +
+            '<span>挂号单号 <span class="mono">' + esc(a.id) + '</span></span></div>' +
+        '</div>' +
+        '<div class="rec-actions">' +
+          '<button class="btn btn-ghost btn-sm" type="button" data-print="' + esc(a.id) + '">打印</button>' +
+          (canCancel ? '<button class="btn btn-ghost btn-sm" type="button" data-cancel="' + esc(a.id) + '">退号</button>' : '') +
+        '</div>' +
+      '</div>';
+    });
+    list.innerHTML = html;
+  }
+
+  $('#lookupForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    state.query = $('#lookupInput').value.trim();
+    if (!state.query) { toast('请输入手机号、身份证号或挂号单号'); return; }
+    renderRecords();
+  });
+
+  /* ========== 退号 ========== */
+  var dlg = $('#cancelDlg');
+  var pendingId = null;
+
+  function openCancel(id) {
+    var a = null;
+    for (var i = 0; i < appointments.length; i++) if (appointments[i].id === id) a = appointments[i];
+    if (!a) return;
+    pendingId = id;
+    $('#cancelText').textContent = '将退掉 ' + dateCn(a.date) + ' ' + a.slot + ' · ' + a.deptName + ' ' +
+      a.doctorName + ' 的号（就诊序号 ' + a.seq + ' 号）。退号后号源会释放给其他患者。';
+    if (typeof dlg.showModal === 'function') dlg.showModal();
+    else if (window.confirm($('#cancelText').textContent)) doCancel();
+  }
+  function doCancel() {
+    if (!pendingId) return;
+    var id = pendingId;
+    var wasBooked = !!(state.booked && state.booked.id === id);
+    for (var i = 0; i < appointments.length; i++) {
+      if (appointments[i].id === id) {
+        appointments[i].status = '已退号';
+        break;
+      }
+    }
+    save();
+    pendingId = null;
+    if (dlg.open) dlg.close();
+    if (wasBooked) {
+      state.booked = null;
+      renderPatient();
+    }
+    renderRecords();
+    renderSlots();
+    renderSlip();
+    toast('已退号，号源已释放');
+  }
+  $('#cancelYes').addEventListener('click', doCancel);
+  $('#cancelNo').addEventListener('click', function () {
+    pendingId = null;
+    if (dlg.open) dlg.close();
+  });
+  dlg.addEventListener('cancel', function () { pendingId = null; });
+
+  /* ========== 打印 ========== */
+  function findAppt(id) {
+    for (var i = 0; i < appointments.length; i++) if (appointments[i].id === id) return appointments[i];
+    return null;
+  }
+  function printSlip(id) {
+    var a = findAppt(id);
+    if (!a) return;
+    var box = $('#printOnly');
+    box.innerHTML = slipMarkup(a, null).replace('seal press', 'seal');
+    window.print();
+  }
+
+  /* ========== 全局点击 ========== */
+  document.addEventListener('click', function (e) {
+    var p = e.target.closest('[data-print]');
+    if (p) { printSlip(p.getAttribute('data-print')); return; }
+    var c = e.target.closest('[data-cancel]');
+    if (c) { openCancel(c.getAttribute('data-cancel')); return; }
+    if (e.target.closest('[data-reset]')) { resetFlow(); return; }
+    if (e.target.closest('[data-gorecords]')) { switchView('records'); return; }
+  });
+
+  /* ========== 视图切换 ========== */
+  var tabs = document.querySelectorAll('.tab');
+  function switchView(v) {
+    tabs.forEach(function (t) {
+      var on = t.getAttribute('data-view') === v;
+      t.classList.toggle('is-active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    $('#viewRegister').hidden = v !== 'register';
+    $('#viewRecords').hidden = v !== 'records';
+    if (v === 'records') {
+      if (!$('#lookupInput').value && state.query) $('#lookupInput').value = state.query;
+      renderRecords();
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  tabs.forEach(function (t) {
+    t.addEventListener('click', function () { switchView(t.getAttribute('data-view')); });
+  });
+
+  /* ========== 提示 ========== */
+  var toastTimer = null;
+  function toast(msg) {
+    var el = $('#toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove('show'); }, 2600);
+  }
+
+  /* ========== 启动 ========== */
+  function init() {
+    var now = new Date();
+    $('#todayLine').textContent = now.getFullYear() + '年' + (now.getMonth() + 1) + '月' + now.getDate() + '日 ' +
+      WD[now.getDay()];
+    renderDepts();
+    renderDoctors();
+    renderDates();
+    renderPatient();
+    renderSlip();
+    renderRecords();
+    if ($('#lookupInput')) {
+      $('#lookupInput').addEventListener('input', function () {
+        state.query = this.value.trim();
+        if (state.query.length >= 6) renderRecords();
+        else if (!state.query) renderRecords();
+      });
+    }
+  }
+  init();
+})();
+</script>
+</body>
+</html>
