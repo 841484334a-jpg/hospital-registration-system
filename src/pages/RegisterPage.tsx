@@ -161,7 +161,7 @@ export function RegisterPage({ onViewRecords, onToast, onPrint, onCancel }: Prop
           <div className="step-num">01</div>
           <div className="step-body">
             <h2 className="step-title">选择科室</h2>
-            <p className="step-hint">按病情选择科室，不确定时可选内科初诊。</p>
+            <p className="step-hint">按病情选择科室，不确定时可选内科初诊。支持按科室快速筛选。</p>
             <DeptGrid depts={DEPTS} value={state.dept} onSelect={selectDept} />
           </div>
         </section>
