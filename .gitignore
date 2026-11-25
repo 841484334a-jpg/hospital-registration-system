@@ -29,3 +29,6 @@ dist-ssr
 __pycache__/
 *.py[cod]
 .npmrc
+
+# 本地编辑器/预览工具配置，不纳入版本控制
+.claude/

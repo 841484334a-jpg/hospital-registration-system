@@ -1,36 +1,56 @@
 # 仁和医院 · 门诊挂号系统
 
-基于 Vite + React 19 + TypeScript 开发的门诊自助挂号系统。
+基于 **Vite + React 19 + TypeScript** 开发的门诊自助挂号系统，为《医院信息系统实验：AI 智能体与 Vibe Coding 开发实践》实验三作品。
 
-# React + TypeScript + Vite
+## 功能
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+- **自助挂号**：选科室 → 选医生 → 选日期 → 选时段 → 填写就诊人信息 → 生成挂号单
+- **我的挂号**：按手机号 / 身份证号 / 挂号单号查询，支持退号与补打挂号单
+- **就诊记录**：已完成就诊的历史汇总，含就诊次数、累计挂号费统计
+- 身份证号 GB 11643 校验位验证，自动识别性别与年龄
+- 号源余量按「医生 + 日期 + 时段」哈希生成，同一天同一时段号源稳定
+- 挂号单含模拟条码与印章，支持打印
 
-Currently, two official plugins are available:
+## 运行
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+打开 <http://localhost:5173>。
+
+其他命令：
+
+```bash
+npm run build      # 生产构建
+npm run typecheck  # TypeScript 类型检查
+```
+
+## 技术栈
+
+| 项目 | 版本 |
+|---|---|
+| Vite | 8.3.8 |
+| React | 19.3.1 |
+| TypeScript | 7.0.2 |
+
+无第三方 UI 库与状态库，样式为原生 CSS，数据存于浏览器 localStorage（键名 `renhe-gh-v1`）。
+
+## 目录结构
+
+```
+src/
+├── types/        类型定义
+├── data/         科室与医生静态数据
+├── lib/          纯函数：日期、身份证、号源、存储
+├── hooks/        挂号单状态与 Context
+├── components/   UI 组件
+├── pages/        自助挂号 / 我的挂号 / 就诊记录
+└── legacy/       重构前的单文件版本（保留作对照）
+```
+
+## 说明
+
+本仓库为湖南中医药大学《医院信息系统实验》课程作业（2026 年秋季，学号 202401080117）。
+仅供课程评阅，请勿抄袭或用于其他用途。
